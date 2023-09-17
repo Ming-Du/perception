@@ -1,0 +1,88 @@
+syntax = "proto2";
+package perception;
+
+message Vector3 {
+  optional double x = 1;
+  optional double y = 2;
+  optional double z = 3;
+}
+
+message Roi {
+  optional float roi_x_min = 1;
+  optional float roi_x_max = 2;
+  optional float roi_y_min = 3;
+  optional float roi_y_max = 4;
+  optional float roi_z_min = 5;
+  optional float roi_z_max = 6;
+}
+
+message InputSensor {
+  optional string sensor_name = 1;
+  optional string topic = 2;
+}
+
+message LidarComponentInitOptions {
+  optional string input_sensor = 1; // main lidar to process
+
+  optional Roi roi = 2;
+  
+  // downsampling
+  optional float sensor_height = 4;
+  optional float downsampling_radius = 5 [default = 0.06];
+  // ground filter
+  optional int32 num_lpr = 6;
+  optional float th_dist = 7;
+  optional float th_seeds = 8;
+  optional float min_distance = 9;
+  
+  // publish obstacle markers
+  optional bool publish_cluster = 10 [default = false];
+}
+
+message CameraComponentInitOptions {
+  optional string input_sensor = 1;
+
+  optional string load_serialize_path = 2 [deprecated = true];
+  optional string load_class_names = 3 [deprecated = true];
+
+  optional string publish_objects = 6;
+}
+
+message VirtualObject {
+  optional uint32 id = 1; 
+  optional Vector3 position = 2; 
+  optional Vector3 size = 3;
+  optional double yaw = 4;
+}
+
+message FusionComponentInitOptions {
+  optional bool use_lidar = 1 [default = true];
+  optional bool use_radar = 2 [default = false];
+  optional bool use_camera = 3 [default = true];
+
+  repeated InputSensor input_sensor = 4;
+  optional string fusion_method = 5;
+  repeated string fusion_main_sensors = 6;
+  optional bool object_in_roi_check = 7;
+  optional double radius_for_roi_object_check = 8;
+  optional string localization_topic = 9;
+  optional string output_obstacles_topic_name = 10;
+  optional string output_obstacles_topic_name_app = 11;
+  optional string output_viz_fused_box_topic_name = 12;
+  optional string output_viz_fused_text_topic_name = 13;
+  // Modify-guoxiaoxiao
+  optional bool enable_publish_fusion_topic = 14 [default = true];
+  optional bool enable_publish_fusion_topic_app = 15 [default = true];
+  // Modify(@liuxinyu): obu_test
+  optional bool use_obu = 16 [default = true];
+  optional bool use_vidar = 17 [default = false];
+  optional bool pub_vidar = 18 [default = false];
+  optional bool pub_radar = 19 [default = false];
+  optional bool pub_obu = 20 [default = false];
+  // Modify(@jiangnan): falcon_lidar
+  optional bool use_falcon_lidar=21[default = true];
+  optional double falcon_lidar_filter_distance = 22;
+  repeated VirtualObject virtual_object = 23;
+  optional string semantic_map_name = 24 [default = "hengyang/hengyang_v1.0.0.json"];
+  optional bool use_ground_map = 25 [default = false];
+}

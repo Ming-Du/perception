@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>perception_base</name>
+  <version>0.0.0</version>
+  <description>The perception_base package</description>
+  <maintainer email="tongbochen@zhidaoauto.com">tongbochen</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>common</buildtool_depend>
+
+</package>
