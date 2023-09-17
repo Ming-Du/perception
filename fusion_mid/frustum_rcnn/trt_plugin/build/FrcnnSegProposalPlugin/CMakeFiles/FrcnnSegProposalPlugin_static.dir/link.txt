@@ -1,0 +1,2 @@
+/usr/bin/ar qc libFrcnnSegProposalPlugin_static.a CMakeFiles/FrcnnSegProposalPlugin_static.dir/FrcnnSegProposalPlugin.cpp.o CMakeFiles/FrcnnSegProposalPlugin_static.dir/FrcnnSegProposalPlugin_static_generated_FrcnnSegProposal.cu.o
+/usr/bin/ranlib libFrcnnSegProposalPlugin_static.a

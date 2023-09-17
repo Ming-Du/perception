@@ -1,0 +1,67 @@
+################### 调试 ##############
+# 是否发布点云到相机投影可视化topic
+is_pub_cloudpointsImg=0
+# 是否发布fpointnet处理后的可视化topic
+is_addfpnet_visualization_pub=0
+# 是否发布camera视锥可视化topic
+is_pub_camera_frustum=0
+# whether publish frustum points visualization
+is_pub_frustum_points=0
+# 是否打印统计耗时
+is_print_timecost=false
+
+#################### 参数设置 ####################
+# fpnet margin
+margin_fpnet=10
+# 可接受的最大时间阈值差
+max_time_tr=0.3
+# 激光-相机时间差上报阈值
+min_lidar_camera_sync_time_thr = 0.1
+# whether publish trigger 
+enable_trigger = false
+
+####################  noise infer filter roi ####################
+noise_roi_x_max=40.0
+noise_roi_x_min=-5.0
+noise_roi_y_max=20.0
+noise_roi_y_min=-20.0
+fixed_noise_minimum_score_thr=0.8
+
+#################### fpointnet model engine name ####################
+fpointnet_engine_name = epoch=0069-iou_bev_mean=0.40.ckpt_0614_v3.engine
+
+#################### object infer flag ####################
+#is off fpnet
+is_fpnet=1
+is_vegetation_infer = 1
+is_small_object_infer = 1
+is_noise_infer = 1
+is_only_pub_cone = false
+
+#################### vegetation infer ROI ####################
+vegetation_roi_x_max=50.0
+vegetation_roi_x_min=0.0
+vegetation_roi_y_max=20.0
+vegetation_roi_y_min=-20.0
+vegetation_threshold=0.5
+max_vegetation_velocity=15.0
+
+####################  接收相机topic ####################
+rec_topic_name_front_camera_obstacle_front30=/perception/camera/camera_obstacle_front30
+rec_topic_name_front_camera_obstacle_front60=/perception/camera/camera_obstacle_front60
+rec_topic_name_front_camera_obstacle_front120=/perception/camera/camera_obstacle_front120n
+rec_topic_name_front_camera_obstacle_left120=/perception/camera/camera_obstacle_left120n
+rec_topic_name_front_camera_obstacle_right120=/perception/camera/camera_obstacle_right120n
+rec_topic_name_back_camera_obstacle_back120=/perception/camera/camera_obstacle_back120n
+rec_topic_name_front_camera_detection_60=/perception/camera/object_detection_front60
+
+####################  接收lidar topic ####################
+rec_topic_name_lidar_cloud=/sensor/lidar/middle/point_cloud
+#rec_topic_name_lidar_cloud=/perception/lidar/lslidar/percept_background_rviz
+rec_topic_name_lidar_obstacle=/perception/lidar/lidar_obstacle
+
+####################  接收radar topic ####################
+rec_topic_name_radar_obstacle=/perception/radar/radar_obstacle
+
+####################  接收localization topic ####################
+rec_topic_name_localization = /localization/global

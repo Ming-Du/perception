@@ -1,0 +1,6 @@
+tracker_name: "MidFusionTracker"
+tracking_time_window: 0.06
+matcher_name: "HMMatcher"
+chosen_filter: "AdaptiveKalmanFilter"
+tracked_times_threshold: 1
+use_filter: true

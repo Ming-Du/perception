@@ -1,0 +1,3 @@
+# Hashes of file build rules.
+92774e0c660953663d1856253fde28d2 CenterShiftCustomPlugin/CMakeFiles/CenterShiftCustomPlugin_static.dir/CenterShiftCustomPlugin_static_generated_CenterShiftCustom.cu.o
+279bcaf75350189ffa4c50ab468be036 FrcnnSegProposalPlugin/CMakeFiles/FrcnnSegProposalPlugin_static.dir/FrcnnSegProposalPlugin_static_generated_FrcnnSegProposal.cu.o

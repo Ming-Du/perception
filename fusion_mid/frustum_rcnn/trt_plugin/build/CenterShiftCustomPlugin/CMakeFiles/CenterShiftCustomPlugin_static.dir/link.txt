@@ -1,0 +1,2 @@
+/usr/bin/ar qc libCenterShiftCustomPlugin_static.a CMakeFiles/CenterShiftCustomPlugin_static.dir/CenterShiftCustomPlugin.cpp.o CMakeFiles/CenterShiftCustomPlugin_static.dir/CenterShiftCustomPlugin_static_generated_CenterShiftCustom.cu.o
+/usr/bin/ranlib libCenterShiftCustomPlugin_static.a

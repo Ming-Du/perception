@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="config_path" default="$(find config)/vehicle"/>
+  <arg name="sensor_meta" value="$(arg config_path)/sensor/calibrated_sensor.pb.txt " />
+  <arg name="obs_enable_hdmap_input" default="true" />
+  <arg name= "fusion_mid_config_path_arg" default="$(find perception_fusion_mid)/config/" />
+
+  <node name="perception_fusion_mid" ns="/perception/fusion"
+    pkg="perception_fusion_mid" type="perception_fusion_mid_node" output="screen"
+    args="--logtostderr=0 --stderrthreshold=0 --v=1
+          --sensor_meta_path=$(arg sensor_meta) 
+          --work_root=$(arg fusion_mid_config_path_arg)
+          --fusion_mid_conf_path=$(arg config_path)/perception/fusion_mid/fusion_mid_config.pb.txt
+          --fusion_mid_config_manager_path=$(arg fusion_mid_config_path_arg)" >
+    <param name="use_filter" type="bool" value="true"/>
+    <param name= "fusion_mid_config_path" value="$(find perception_fusion_mid)/config/" />
+    <param name= "fusion_mid_models_path" value="$(find perception_fusion_mid)/models/" />
+  </node>          
+</launch>

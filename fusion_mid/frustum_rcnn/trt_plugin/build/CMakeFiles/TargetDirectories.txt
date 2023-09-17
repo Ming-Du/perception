@@ -1,0 +1,9 @@
+/home/xml/git_code/frustum_rcnn/trt_plugin/build/CMakeFiles/rebuild_cache.dir
+/home/xml/git_code/frustum_rcnn/trt_plugin/build/CMakeFiles/edit_cache.dir
+/home/xml/git_code/frustum_rcnn/trt_plugin/build/CMakeFiles/trt_plugin.dir
+/home/xml/git_code/frustum_rcnn/trt_plugin/build/FrcnnSegProposalPlugin/CMakeFiles/rebuild_cache.dir
+/home/xml/git_code/frustum_rcnn/trt_plugin/build/FrcnnSegProposalPlugin/CMakeFiles/edit_cache.dir
+/home/xml/git_code/frustum_rcnn/trt_plugin/build/FrcnnSegProposalPlugin/CMakeFiles/FrcnnSegProposalPlugin_static.dir
+/home/xml/git_code/frustum_rcnn/trt_plugin/build/CenterShiftCustomPlugin/CMakeFiles/rebuild_cache.dir
+/home/xml/git_code/frustum_rcnn/trt_plugin/build/CenterShiftCustomPlugin/CMakeFiles/edit_cache.dir
+/home/xml/git_code/frustum_rcnn/trt_plugin/build/CenterShiftCustomPlugin/CMakeFiles/CenterShiftCustomPlugin_static.dir

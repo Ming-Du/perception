@@ -1,0 +1,9 @@
+preprocess:
+    margin: 10
+    enlarge_size_w: 1.1
+    enlarge_size_h: 1.1
+    frustum_point_num: 1024
+
+postprocess:
+    min_pts: 5
+    iou_thresh: 0.2

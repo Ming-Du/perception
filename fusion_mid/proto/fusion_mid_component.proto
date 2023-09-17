@@ -1,0 +1,8 @@
+syntax = "proto2";
+package perception.mid_fusion;
+
+message MidFusionInitOptions{
+  optional string rec_topic_name_lidar_cloud = 1;
+  optional string rec_topic_name_lidar_obstacle = 2;
+  optional string vehicle_type = 3;
+}

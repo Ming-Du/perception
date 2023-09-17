@@ -1,0 +1,11 @@
+syntax = "proto2";
+package perception.mid_fusion;
+
+message MidFusionTrackerConf {
+  optional string tracker_name = 1;
+  optional double tracking_time_window = 2;
+  optional string matcher_name = 3;
+  optional string chosen_filter = 4;
+  optional double tracked_times_threshold = 5;
+  optional bool   use_filter = 6;
+}
