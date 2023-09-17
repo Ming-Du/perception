@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/mogo/data/catkin_ws/src/perception/fusion/cmake-build-debug/devel/setup.sh

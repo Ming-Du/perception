@@ -1,0 +1,27 @@
+converged_scale: 2.0
+converged_scale_lidar_px: 20.0
+converged_scale_lidar_py: 30.0
+converged_scale_lidar_vx: 35.0
+converged_scale_lidar_vy: 40.0
+converged_scale_falcon_px: 15.0
+converged_scale_falcon_py: 20.0
+converged_scale_falcon_vx: 30.0
+converged_scale_falcon_vy: 35.0
+converged_scale_radar_px : 400   
+converged_scale_radar_py: 450
+converged_scale_radar_vx: 50.0
+converged_scale_radar_vy: 120.0
+converged_scale_vidar_px: 500.0  
+converged_scale_vidar_py: 500.0
+converged_scale_vidar_vx: 500.0
+converged_scale_vidar_vy: 500.0
+converged_scale_camera: 500.0
+converged_scale_bsm_p: 2.0
+converged_scale_bsm_v: 2.0
+converged_scale_v2i_ssm_p: 2.0
+converged_scale_v2i_ssm_v: 2.0
+converged_scale_v2n_rsm_p: 2.0
+converged_scale_v2n_rsm_v: 2.0
+converged_scale_v2n_rsi_p: 5.0
+converged_scale_v2n_rsi_v: 5.0
+unconverged_scale: 10000.0

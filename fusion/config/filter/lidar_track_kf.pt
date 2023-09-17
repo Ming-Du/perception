@@ -1,0 +1,8 @@
+noise_ax: 9
+noise_ay: 9
+std_px: 0.25
+std_py: 0.25
+px: 1.0
+py: 1.0
+pvx: 1000.0
+pvy: 1000.0

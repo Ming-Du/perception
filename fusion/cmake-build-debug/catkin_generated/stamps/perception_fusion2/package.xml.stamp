@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>perception_fusion2</name>
+  <version>0.0.0</version>
+  <description>The perception_fusion2 package</description>
+  <maintainer email="sunyafei@zhidaoauto.com">sunyafei</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>system</build_depend>
+  <build_depend>autopilot_msgs</build_depend>
+  <exec_depend>autopilot_msgs</exec_depend>
+  <test_depend>rosunit</test_depend>
+
+</package>

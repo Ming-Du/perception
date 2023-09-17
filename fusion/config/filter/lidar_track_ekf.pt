@@ -1,0 +1,11 @@
+mu_a: 0.0 
+mu_omega_d: 0.0 
+sigma_a: 10
+sigma_omega_d: 10
+std_px: 3.5 
+std_py: 3.5
+px: 0 
+py: 0 
+pv: 0 
+ptheta: 0 
+pomega: 0

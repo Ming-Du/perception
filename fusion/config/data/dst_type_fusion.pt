@@ -1,0 +1,45 @@
+camera_params {
+  name: "SENSING_30"
+  valid_dist: 110
+  reliability: 0.5
+  reliability_for_unknown: 0.0
+}
+
+camera_params {
+  name: "SENSING_60"
+  valid_dist: 110
+  reliability: 0.8
+  reliability_for_unknown: 0.0
+}
+
+camera_params {
+  name: "SENSING_120"
+  valid_dist: 110
+  reliability: 0.5
+  reliability_for_unknown: 0.0
+}
+
+lidar_params {
+  name: "LSLIDAR_C32"
+  reliability: 0.5
+  reliability_for_unknown: 0.0
+}
+
+lidar_params {
+  name: "INNOVUSION_FALCON_LIDAR"
+  reliability: 0.7
+  reliability_for_unknown: 0.0
+}
+
+vidar_params {
+  name: "VIDAR"
+  reliability: 0.5
+  reliability_for_unknown: 0.0
+}
+
+v2x_params {
+  name: "V2X"
+  reliability: 0.5
+  reliability_for_unknown: 0.0
+}
+

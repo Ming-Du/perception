@@ -1,0 +1,15 @@
+std_a: 1.2
+std_yawdd: 0.6
+std_laspx: 0.02
+std_laspy: 0.05
+std_lasv: 5.0
+std_lasyaw: 0.02
+std_rdpx: 2.0
+std_rdpy: 2.0
+std_rdv: 0.5
+std_rdyaw: 0.1
+px: 0.1 
+py: 0.1
+pv: 1.8
+ptheta: 0.02 
+pomega: 1

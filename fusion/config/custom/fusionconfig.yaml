@@ -1,0 +1,34 @@
+fusion:
+  vc_diff2distance_scale_factor_: 0.02 #lidar投影到image的比例缩放因子
+  mid_fusion_obstacle_topic: /perception/fusion_mid/lidar_obstacle
+  idassign_devposition_x: 10.0 #单位m，id匹配检查position的x方向的差值阈值
+  idassign_devposition_y: 10.0 #单位m，id匹配检查position的y方向的差值阈值
+  prediction_count: 5 #预测次数，超过则将融合的状态更新为预测，需要根据传感器的个数设置
+  radar_filter_yaw_thr: 0.025 # 自车曲率大于thr时,过滤radar
+  yaw_kalman_q: 0.314 #yaw角卡尔曼滤波的过程噪声
+  yaw_kalman_r: 3.14  #yaw角卡尔曼滤波的测量噪声
+  release_mode: false #release模式下不发布rviz话题
+   ## size融合滤波器的参数
+  sizel_kalman_q: 0.01 #size的长度卡尔曼滤波器的过程噪声
+  sizel_kalman_r: 100 #size的长度卡尔曼滤波器的测量噪声
+  sizew_kalman_q: 0.1 #size的宽度卡尔曼滤波器的过程噪声
+  sizew_kalman_r: 100 #size的宽度卡尔曼滤波器的测量噪声
+  sizeh_kalman_q: 1.0 #size的高度卡尔曼滤波器的过程噪声
+  sizeh_kalman_r: 1 #size的高度卡尔曼滤波器的测量噪声
+  vehicle: 2  #1 Taxi（M1）BUS(2) Sweeper(3) M2(4)
+  frustum_front60_left_y: 20 #前方60度相机的左侧限制点的y坐标,float
+  frustum_front60_left_x: 40 #前方60度相机的左侧限制点的x坐标,float
+  frustum_front60_right_y: -18 #前方60度相机的右侧限制点的y坐标,float
+  frustum_front60_right_x: 40 #前方60度相机的右侧限制点的x坐标,float
+  frustum_front60_origin_x: 5 #前方60度相机的近处限制点的x坐标,float
+  frustum_front60_origin_y: 0 #前方60度相机的近处限制点的y坐标,float
+v2x:
+  v2x_process_mode: 1 # 1:Fusion 2:Blind 3:BeyondRange 4:PassThrough 5:Only V2i
+  pass_through_mode: 1 # 1-beyond range 2-blind 
+  beyond_vis_range: 120
+  radius_for_fusion_object: 5
+  zombie_thr: 12000 # unit:10ms
+  enable_only_pub_zombie: false
+
+
+

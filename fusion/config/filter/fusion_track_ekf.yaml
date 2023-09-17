@@ -1,0 +1,14 @@
+mu_a: 0.0
+mu_omega_d: 0.0
+sigma_a: 0.1
+sigma_omega_d: 0.1
+std_px: 2000.0
+std_py: 2000.0
+std_pv: 2000.0
+std_ptheta: 2000.0
+std_pomega: 2000.0
+px: 0 
+py: 0 
+pv: 0 
+ptheta: 0 
+pomega: 0
