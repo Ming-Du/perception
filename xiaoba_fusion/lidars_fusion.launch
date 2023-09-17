@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="config_path" default="$(find config)/vehicle" />
+  <arg name="sensor_meta" default="$(arg config_path)/sensor/calibrated_sensor.pb.txt" />
+  <node name="xiaoba_lidars_fusion" pkg="xiaoba_fusion" type="xiaoba_fusion_node" output="screen"
+    args="--logtostderr=0 --stderrthreshold=1 --v=5
+          --sensor_meta_path=$(arg sensor_meta)
+          --lidar_input=c32_front_left;c32_front_right;c32_rear" >
+    <param name="output_cloud_topic" type="string" value="/sensor/lidar/middle/point_cloud" />
+    <param name="fusion_frame_id" type="string" value="base_link" />
+    <param name="monitor_stamp_flag" type="bool" value="true" />
+    <param name="over_time_threshold" type="double" value="0.03" />
+    <param name="lidar_time_offset" type="double" value="0.00" />
+  </node>
+</launch>
