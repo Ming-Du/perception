@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="config_path" default="$(find config)/vehicle" />
+  <arg name="sensor_meta" default="$(arg config_path)/sensor/calibrated_sensor.pb.txt" />
+  <arg name= "perception_path" default="$(find rs_perception_node)/config" />
+  <arg name= "grid_map_path" default="$(find rs_perception_node)/config/map" />
+  <node name="rs_perception_m1_node" ns="/perception/lidar"
+    pkg="rs_perception_node" type="rs_perception_node" output="screen"
+    args="--logtostderr=0 --stderrthreshold=1 --v=5
+          --sensor_meta_path=$(arg sensor_meta)
+          --lidar_segmentation_conf_path=$(arg config_path)/perception/lidar/lidar_segmentation.pb.txt
+          --publish_lidar_cluster=true
+          --lidar_input=rslidar_left;rslidar_right;rslidar_rear" >
+  <param name="perception_config_path" type="string" value="$(arg perception_path)" />
+  <param name="perception_grid_map_path" type="string" value="$(arg grid_map_path)" />
+  <param name="vehicle_type" type="string" value="m1" />
+  </node>
+</launch>

@@ -1,0 +1,12 @@
+city_name: beijing
+mappath: beijing/V3.4.1
+tilesize: 100
+gridsize: 0.20000000000000001
+lon_png_min: 116.36169441975653
+lon_png_max: 116.75720223225653
+lat_png_min: 39.726562583819032
+lat_png_max: 40.204467857256532
+lonzero: 116
+latzero: 39
+utm_start_X: 413407.32193977013
+utm_start_Y: 4317252.1646352857

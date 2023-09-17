@@ -1,0 +1,3 @@
+include: common.yaml
+map:
+  include: map/beijing/beijing_config.yaml

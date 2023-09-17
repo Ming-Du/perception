@@ -1,0 +1,6 @@
+include: common.yaml
+map:
+  include: map/fuzhou/fuzhou_config.yaml
+
+roi_filter:
+  roadside_valid_flag: false

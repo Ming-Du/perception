@@ -1,0 +1,3 @@
+include: common.yaml
+map:
+  include: map/yantai/yantai_config.yaml

@@ -1,0 +1,12 @@
+city_name: yantai
+mappath: yantai/V1.8.1
+tilesize: 100
+gridsize: 0.20000000000000001
+lon_png_min: 121.57470711506903
+lon_png_max: 121.64611824788153
+lat_png_min: 37.433166587725282
+lat_png_max: 37.485351646319032
+lonzero: 121
+latzero: 37
+utm_start_X: 322037.81018728809
+utm_start_Y: 4096742.0593477832

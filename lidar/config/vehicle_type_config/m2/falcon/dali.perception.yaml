@@ -1,0 +1,3 @@
+include: common.yaml
+map:
+  include: map/dali/dali_config.yaml

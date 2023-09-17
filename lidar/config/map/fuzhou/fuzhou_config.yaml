@@ -1,0 +1,12 @@
+city_name: fuzhou
+mappath: fuzhou/V1.2
+tilesize: 100
+gridsize: 0.20000000000000001
+lon_png_min: 119.44061287678778
+lon_png_max: 119.85809334553778
+lat_png_min: 25.430603111162782
+lat_png_max: 25.990905845537782
+lonzero: 119
+latzero: 25
+utm_start_X: 701845.95348014752
+utm_start_Y: 2766436.9838995356

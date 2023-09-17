@@ -1,0 +1,12 @@
+city_name: hengyang
+mappath: hengyang/V3.4.1
+tilesize: 100
+gridsize: 0.20000000000000001
+lon_png_min: 112.46978768147528
+lon_png_max: 112.74993904866278
+lat_png_min: 26.699524009600282
+lat_png_max: 26.979675376787782
+lonzero: 112
+latzero: 26
+utm_start_X: 600080.81808541564
+utm_start_Y: 2876066.7246653312

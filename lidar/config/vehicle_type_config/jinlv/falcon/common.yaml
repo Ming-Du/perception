@@ -1,0 +1,72 @@
+include: vehicle_type_config/common.yaml
+sensor_name: innolidar
+type: falcon
+input_cloud_topic: /sensor/lidar/innolidar/point_cloud
+output_objects_topic: /perception/lidar/lidar_inno_obstacle
+is_send_pointcloud: true
+is_process_semanticmap: false
+preprocessing:
+  range_filter:
+    enable: true
+    xmin: 0.
+    xmax: 128.
+    ymin: -60.
+    ymax: 60.
+    zmin: -1.
+    zmax: 7.
+
+roi_filter:
+  enable: true
+  range_filter:
+    xmin: 0.
+    xmax: 128.
+    ymin: -60.
+    ymax: 60.
+    zmin: -1.
+    zmax: 7.
+
+denoise:
+  enable: &denoiseEnable false
+
+ai_detection:
+  enable: true
+  default_confidence_thres: 0.25 # is_use_confidence_map==false
+  max_num_pillars: 35000
+  pillar_z_size: 4
+  model: PointPillarsCenterHeadCnnDetection/v56_2_centerpoint_pointpillar_falconV10_1xtruckbus_2x_senet_vfe1fc_yawfocalcls_softmaxCEloss10_cornerdist2_e200_smallrange_35000_pz4.trt
+  detect_range:    # 检测范围
+    xmin: 0
+    xmax: 97.28
+    ymin: -40.96
+    ymax: 40.96
+    zmin: -1
+    zmax: 3
+  type_range_confidence:
+    range_boundary: [0,20.0, 40.0, 60.0,80.0,100.0]
+    ped: [0.403, 0.405, 0.403, 0.408,0.335]
+    bic: [0.28, 0.283, 0.286, 0.282,0.289]
+    car: [0.308, 0.321, 0.373, 0.377,0.376]
+    truck: [0.30, 0.28, 0.28, 0.301,0.306]
+    bus: [0.301, 0.306, 0.319, 0.302,0.304]
+
+ai_refine:
+  enable: false
+  model: LiDARRCNNRefine/v1_7_1_lidar_rcnn_falconv7train_e59_bs8_sizeexp_logitsmax.trt
+
+ground_filter:
+  enable: false  # 检测开关
+
+segmentor:
+  enable: false  # 功能开关
+  
+rule_segment:
+  enable: false
+
+refiner:
+  pps_isfalcon: true
+  enable_AIRoiFilter: true
+  enable_VegetTag: false
+  enable_BoxRefine: false
+
+rviz:
+  prefix: "innolidar/" # DEFAULT   # rviz显示topic名称前缀

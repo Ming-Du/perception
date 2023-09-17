@@ -1,0 +1,12 @@
+city_name: dali
+mappath: dali/V1.7
+tilesize: 100
+gridsize: 0.20000000000000001
+lon_png_min: 100.09918221272528
+lon_png_max: 100.22277840413153
+lat_png_min: 25.620117271319032
+lat_png_max: 25.927734458819032
+lonzero: 100
+latzero: 25
+utm_start_X: 600913.02666305879
+utm_start_Y: 2765319.9440397727

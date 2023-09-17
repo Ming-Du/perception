@@ -1,0 +1,96 @@
+include: vehicle_type_config/common.yaml
+sensor_name: lidar_main
+type: leishen
+input_cloud_topic: /sensor/lidar/middle/point_cloud
+output_objects_topic: /perception/lidar/lidar_obstacle
+
+
+preprocessing:
+  # 数据预处理模块
+  # 车体坐标系下过滤车体范围内点云
+  vehicle_filter:
+    enable: true
+    ymin: -1.31
+    ymax: 1.31
+  range_filter:
+    enable: true
+    xmin: -60.
+    xmax: 60.
+    ymin: -40.
+    ymax: 40.
+    zmin: -1.
+    zmax: 2.
+
+roi_filter:
+  enable: true
+  range_filter:
+    xmin: -60
+    xmax: 60
+    ymin: -40
+    ymax: 40
+    zmin: -1
+    zmax: 3
+
+denoise:
+  enable: &denoiseEnable true
+  model: denoise_grid_0523.json
+  confidence: 0.49347338
+  obj_model: denoise_obj_0523.json
+  obj_confidence: 0.60116196
+  # height_grass_threshold: 1.0
+  # tracking
+  delete_before_tracker: &denoiseDeleteBefore false
+  first_suspected: &denoiseFirstSuspected true
+  debug: &denoiseDebug false
+  delete_in_output: &denoiseDeleteInOut false
+  height_grass_threshold: &heightGrassThreshold 1.0
+  first_suspected_range: &denoiseFirstSuspectedRange
+    xmin: 0
+    xmax: 30
+    ymin: -10
+    ymax: 10
+    zmin: 0.2
+    zmax: 2.5
+
+ai_detection:
+  enable: true
+  default_confidence_thres: 0.15 # is_use_confidence_map==false
+  max_num_pillars: 20000
+  pillar_z_size: 5
+  model: PointPillarsCenterHeadCnnDetection/v55_centerpoint_pointpillar_lsV14_2x_senet_vfe1fc_yawcls_softmaxCEloss10_cornerdist05_giou05_iou0_aspptwobigdilation_smallrange2_finetune_e77_20000.trt
+  detect_range:    # 检测范围
+    xmin: -46.08
+    xmax: 51.2
+    ymin: -33.28
+    ymax: 33.28
+    zmin: -1.0
+    zmax: 3.0
+  type_range_confidence:
+    range_boundary: [-51.2,-20.0,0.0,20.0,51.2]
+    ped: [0.15,0.15,0.15,0.15]
+    bic: [0.285,0.301,0.317,0.329]
+    car: [0.30,0.263,0.285,0.340]
+    truck: [0.25,0.28,0.29,0.23]
+    bus: [0.2,0.283,0.3,0.25]
+
+ai_refine:
+  enable: true
+  model: LiDARRCNNRefine/v1_28_1_lidar_rcnn_ls_e59_bs8_sizeexp_softmaxlogitsmax.trt
+
+# 几何方法检测地面功能模块
+ground_filter:
+  enable: true
+
+# 点云分割聚类模块，依赖ground filter结果
+segmentor:
+  enable: true
+
+refiner:
+  enable: true
+  floating_filter: true
+  ghost_filter: true
+  flowerbed_filter: true
+  other_expand_ratio: 0.4
+
+rviz:
+  prefix: lslidar/ # DEFAULT   # rviz显示topic名称前缀

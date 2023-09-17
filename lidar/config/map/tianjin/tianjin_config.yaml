@@ -1,0 +1,12 @@
+city_name: tianjin
+mappath: tianjin/V1.3
+tilesize: 100
+gridsize: 0.20000000000000001
+lon_png_min: 117.00714119710028
+lon_png_max: 117.05657967366278
+lat_png_min: 39.042663658037782
+lat_png_max: 39.097595298662782
+lonzero: 117
+latzero: 39
+utm_start_X: 499999.99996708304
+utm_start_Y: 4316776.5832152786

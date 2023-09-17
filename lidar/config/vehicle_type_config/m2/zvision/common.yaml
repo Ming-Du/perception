@@ -1,0 +1,82 @@
+include: vehicle_type_config/common.yaml
+sensor_name: lidar_zvision
+type: zvision
+input_cloud_topic: /sensor/zvisionlidar/middle/point_cloud
+output_objects_topic: /perception/lidar/lidar_zvision_obstacle
+
+preprocessing:
+  # 数据预处理模块
+  # 车体坐标系下过滤车体范围内点云
+  vehicle_filter:
+    enable: true
+    ymin: -1.35
+    ymax: 1.35
+  range_filter:
+    enable: true
+    xmin: -60.
+    xmax: 60.
+    ymin: -40.
+    ymax: 40.
+    zmin: -1.
+    zmax: 3.
+
+roi_filter:
+  enable: true
+  range_filter:
+    xmin: -60
+    xmax: 60
+    ymin: -40
+    ymax: 40
+    zmin: -1
+    zmax: 3
+
+denoise:
+  enable: &denoiseEnable false
+
+ai_detection:
+  enable: true  # ai detection 开关
+  default_confidence_thres: 0.2 # is_use_confidence_map==false
+  max_num_pillars: 20000
+  pillar_z_size: 5
+  model: PointPillarsCenterHeadCnnDetection/v62_centerpoint_pointpillar_zvisionv7_with_bustruckin15mV2_senet_vfe1fc_yawfocalcls_softmaxCEloss10_cornerdist2_e195_20000.trt
+  detect_range:    # 检测范围
+    xmin: -51.2
+    xmax: 51.2
+    ymin: -35.84
+    ymax: 35.84
+    zmin: -1.0
+    zmax: 4
+  type_range_confidence:
+    range_boundary: [-51.2,-20.0,0,20,51.2]
+    ped: [0.2, 0.2, 0.2, 0.2]
+    bic: [0.31, 0.33, 0.29, 0.3]
+    car: [0.2, 0.2, 0.2, 0.2]
+    truck: [0.2, 0.2, 0.2, 0.2]
+    bus: [0.28, 0.26, 0.29, 0.29]
+
+ai_refine:
+  enable: true
+  model: LiDARRCNNRefine/v1_28_1_lidar_rcnn_zvision_e59_bs8_sizeexp_softmaxlogitsmax.trt
+
+
+# 几何方法检测地面功能模块
+ground_filter:
+  enable: true  # 检测开关
+  floating_ground_filter: 0.2 #剔除浮空地面点
+  cloud_height_threshold: 2.5 #点云的最大高度阈值
+  cell_distance_ranges: [0, 15, 30, 45]
+  inner_cell_diff_ranges: [0.2, 0.25, 0.3, 0.35]
+  adjacent_cell_diff_ranges: [0.2, 0.25, 0.3, 0.35]
+
+# 点云分割聚类模块，依赖ground filter结果
+segmentor:
+  enable: true  # 功能开关
+
+refiner:
+  enable: true
+  floating_filter: true
+  flowerbed_filter: true
+  other_expand_ratio: 0.4
+
+rviz:
+  prefix: "zvisionlidar/" # DEFAULT   # rviz显示topic名称前缀

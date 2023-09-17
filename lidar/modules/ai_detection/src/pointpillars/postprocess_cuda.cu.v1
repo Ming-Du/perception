@@ -1,0 +1,565 @@
+/******************************************************************************
+ * Copyright 2017 RoboSense All rights reserved.
+ * Suteng Innovation Technology Co., Ltd. www.robosense.ai
+
+ * This software is provided to you directly by RoboSense and might
+ * only be used to access RoboSense LiDAR. Any compilation,
+ * modification, exploration, reproduction and redistribution are
+ * restricted without RoboSense's prior consent.
+
+ * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL ROBOSENSE BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *****************************************************************************/
+#include <algorithm>
+#include <limits>
+#include <numeric>
+#include <vector>
+#include <thrust/sort.h>
+#include <sys/time.h>
+#include "pointpillars_twohead/postprocess_cuda.h"
+#include "common/nms.h"
+#include "common/base_cuda_check.h"
+
+#include <cstdio>
+#include <iostream>
+
+#include "cuda_runtime_api.h"
+
+
+#define MAX_DEPTH 16
+#define INSERTION_SORT 32
+
+namespace robosense {
+
+// #define GPU_CHECK(ans)                                                         \
+//     { GPUAssert((ans), __FILE__, __LINE__); }
+
+// inline void GPUAssert(cudaError_t code, const char *file, int line,
+//                       bool abort = true) {
+//     if (code != cudaSuccess) {
+//         fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file,
+//                 line);
+//         if (abort)
+//             exit(code);
+//     }
+// };
+
+
+
+/*
+__device__ void selection_sort(float *data, int *indices, int left, int right) {
+    for (int i = left; i <= right; ++i) {
+        float min_val = data[i];
+        int min_idx = i;
+
+        // Find the smallest value in the range [left, right].
+        for (int j = i + 1; j <= right; ++j) {
+            float val_j = data[j];
+
+            if (val_j < min_val) {
+                min_idx = j;
+                min_val = val_j;
+            }
+        }
+
+        // Swap the values.
+        if (i != min_idx) {
+            data[min_idx] = data[i];
+            data[i] = min_val;
+            int tmp = indices[i];
+            indices[i] = indices[min_idx];
+            indices[min_idx] = tmp;
+        }
+    }
+}
+
+__global__ void cdp_simple_quicksort(float *data, int *indices, int left, int right,
+                                   int depth) {
+    // 当递归的深度大于设定的MAX_DEPTH或者待排序的数组长度小于设定的阈值，直接调用简单选择排序
+    if (depth >= MAX_DEPTH || right - left <= INSERTION_SORT) {
+        selection_sort(data, indices, left, right);
+        return;
+    }
+
+    float *left_ptr = data + left;
+    float *right_ptr = data + right;
+    float pivot = data[(left + right) / 2];
+    // partition
+    while (left_ptr <= right_ptr) {
+        float left_val = *left_ptr;
+        float right_val = *right_ptr;
+
+        while (left_val < pivot) { // 找到第一个比pivot大的
+            left_ptr++;
+            left_val = *left_ptr;
+        }
+
+        while (right_val > pivot) { // 找到第一个比pivot小的
+            right_ptr--;
+            right_val = *right_ptr;
+        }
+
+        // do swap
+        if (left_ptr <= right_ptr) {
+            int tmp = indices[left_ptr-data];
+            indices[left_ptr-data] = indices[right_ptr-data];
+            indices[right_ptr-data] = tmp;
+            *left_ptr++ = right_val;
+            *right_ptr-- = left_val;
+        }
+    }
+
+    // recursive
+    int n_right = right_ptr - data;
+    int n_left = left_ptr - data;
+    // Launch a new block to sort the the left part.
+    if (left < (right_ptr - data)) {
+        cudaStream_t l_stream;
+        // 设置非阻塞流
+        cudaStreamCreateWithFlags(&l_stream, cudaStreamNonBlocking);
+        cdp_simple_quicksort<<<1, 1, 0, l_stream>>>(data, indices, left, n_right,
+                                                    depth + 1);
+        cudaStreamDestroy(l_stream);
+    }
+
+    // Launch a new block to sort the the right part.
+    if ((left_ptr - data) < right) {
+        cudaStream_t r_stream;
+        // 设置非阻塞流
+        cudaStreamCreateWithFlags(&r_stream, cudaStreamNonBlocking);
+        cdp_simple_quicksort<<<1, 1, 0, r_stream>>>(data, indices, n_left, right,
+                                                    depth + 1);
+        cudaStreamDestroy(r_stream);
+    }
+}
+
+// Call the quicksort kernel from the host.
+void run_qsort(float *hm, int *indices, unsigned int nitems) {
+    // Prepare CDP for the max depth 'MAX_DEPTH'.
+    BASE_CUDA_CHECK(cudaDeviceSetLimit(cudaLimitDevRuntimeSyncDepth, MAX_DEPTH));
+
+    int left = 0;
+    int right = nitems - 1;
+    cdp_simple_quicksort<<<1, 1>>>(hm, indices, left, right, 0);
+    BASE_CUDA_CHECK(cudaDeviceSynchronize());
+}
+*/
+
+
+__device__ float sigmoid_kernal(const float &x) { return 1.0f / (1.0f + expf(-x)); }
+
+__device__ void decode_classid(const float *scores, float *res, const int num_classes) {
+    float max_scores = sigmoid_kernal(scores[0]);
+    int cls_id = 0;
+    for (int i = 0; i < num_classes; i++) {
+        float cls_score = sigmoid_kernal(scores[i]);
+        if (cls_score > max_scores) {
+            max_scores = cls_score;
+            cls_id = i;
+        }
+    }
+    res[0] = static_cast<float>(cls_id);
+    res[1] = max_scores;
+}
+
+__device__ float decode_dir_class_kernal(const float &pred_dir,
+                                         const float &dir1,
+                                         const float &dir2,
+                                         const int &num_dir_bins,
+                                         const float &dir_offset,
+                                         const float & dir_limit_offset) {
+    int dir_label = dir1 > dir2 ? 0 : 1;
+    float period = 2 * M_PI / num_dir_bins;
+    float val = pred_dir - dir_offset;
+    float dir_rot = val - floor(val / (period + 1e-8) + dir_limit_offset) * period;
+    return dir_rot + dir_offset + period * dir_label;
+}
+
+__device__ void decode_bndbox_kernal(float *box_encodings, const float *anchors) {
+    float xa = anchors[0];
+    float ya = anchors[1];
+    float za = anchors[2];
+    float dxa = anchors[3];
+    float dya = anchors[4];
+    float dza = anchors[5];
+    float ra = anchors[6];
+    float diagonal = sqrtf(dxa * dxa + dya * dya);
+    box_encodings[0] = box_encodings[0] * diagonal + xa;
+    box_encodings[1] = box_encodings[1] * diagonal + ya;
+    box_encodings[2] = box_encodings[2] * dza + za;
+    box_encodings[3] = expf(box_encodings[3]) * dxa;
+    box_encodings[4] = expf(box_encodings[4]) * dya;
+    box_encodings[5] = expf(box_encodings[5]) * dza;
+    box_encodings[6] = box_encodings[6] + ra;
+}
+
+__global__ void make_anchorhead_postprocess_kernal(const float *cls_input,
+                                        float *box_input,
+                                        const float *dir_cls_input,
+                                        float *anchors,
+                                        float *anchors_bottom_height,
+                                        float *bndbox_output,
+                                        int *object_counter,
+                                        const int num_classes,
+                                        const int num_anchors,
+                                        const int feature_x_size,
+                                        const int feature_y_size,
+                                        const float min_x_range,
+                                        const float max_x_range,
+                                        const float min_y_range,
+                                        const float max_y_range,
+                                        const float score_thresh,
+                                        const int num_dir_bins,
+                                        const float dir_offset,
+                                        const float dir_limit_offset) {
+    int loc_index = blockIdx.x;
+    int ith_anchor = threadIdx.x;
+    if (ith_anchor >= num_anchors) {
+        return;
+    }
+
+    // printf("in make_anchorhead_postprocess_kernal -------------- %f %f %f \n", cls_input[0], cls_input[1], cls_input[2]);
+    int col = loc_index % feature_x_size;
+    int row = loc_index / feature_x_size;
+    float x_offset = min_x_range + col * (max_x_range - min_x_range) / (feature_x_size - 1);
+    float y_offset = min_y_range + row * (max_y_range - min_y_range) / (feature_y_size - 1);
+    int cls_offset = loc_index * num_classes * num_anchors + ith_anchor * num_classes;
+    float dev_cls[2] = {-1, 0};
+    decode_classid(cls_input + cls_offset, dev_cls, num_classes);
+    if (dev_cls[1] >= score_thresh) {
+        int box_offset = loc_index * 7 * num_anchors + ith_anchor * 7;
+        int dir_cls_offset = loc_index * 2 * num_anchors + ith_anchor * 2;
+        float *anchor_ptr = anchors + ith_anchor * 4;
+        float z_offset = anchor_ptr[2] / 2 + anchors_bottom_height[ith_anchor / 2];
+        float anchor[7] = {x_offset, y_offset, z_offset, anchor_ptr[0], anchor_ptr[1], anchor_ptr[2], anchor_ptr[3]};
+        float *temp_box_output_ptr = box_input + box_offset;
+        decode_bndbox_kernal(temp_box_output_ptr, anchor);
+        float yaw = decode_dir_class_kernal(box_input[box_offset + 6],
+                                            dir_cls_input[dir_cls_offset],
+                                            dir_cls_input[dir_cls_offset + 1],
+                                            num_dir_bins,
+                                            dir_offset,
+                                            dir_limit_offset);
+        int resCount = (int)atomicAdd(object_counter, 1);
+        bndbox_output[0] = (float)resCount;
+        float *data = bndbox_output + 1 + resCount * 9;
+        data[0] = box_input[box_offset];
+        data[1] = box_input[box_offset + 1];
+        data[2] = box_input[box_offset + 2];
+        data[3] = box_input[box_offset + 3];
+        data[4] = box_input[box_offset + 4];
+        data[5] = box_input[box_offset + 5];
+        data[6] = yaw;
+        data[7] = dev_cls[0];
+        data[8] = dev_cls[1];
+    }
+}
+
+__global__ void headmap_sigmoid_kernal(const float *hm_input, const int feature_bev_size, float *hm_sigmoid_input){
+    // printf("in headmap_sigmoid_kernal -----------------------------");
+    int loc_index = blockIdx.x;
+    int channel_index = threadIdx.x;
+    int offset = channel_index * feature_bev_size + loc_index;
+    hm_sigmoid_input[offset] =  1.0f / (1.0f + expf(-1.0 * hm_input[offset]));
+
+    
+}
+
+__global__ void dimention_exp_kernal(float *dim_input, const int feature_bev_size, float *dim_exp_input){
+    // printf("in dimention_exp_kernal -----------------------------");
+    int loc_index = blockIdx.x;
+    int channel_index = threadIdx.x;
+    int offset = channel_index * feature_bev_size + loc_index;
+    dim_exp_input[offset] =  expf(dim_input[offset]);
+}
+
+void PointPillarsTwoHeadCudaPostprocess::anchorHeadPostProcessCuda() {
+    const auto& feature_x_size = params_ptr_->feature_x_size;
+    const auto& feature_y_size = params_ptr_->feature_y_size;
+    const int feature_bev_size = feature_x_size * feature_y_size;
+    const auto& num_anchors = params_ptr_->anchorhead_num_anchors;
+    const auto& num_classes = params_ptr_->anchorhead_num_classes;
+    const auto &xmin = params_ptr_->detection_range.xmin;
+    const auto &xmax = params_ptr_->detection_range.xmax;
+    const auto &ymin = params_ptr_->detection_range.ymin;
+    const auto &ymax = params_ptr_->detection_range.ymax;
+    const auto &score_thresh = params_ptr_->regression_box_confidence_thre;
+    int *obj_count;
+    BASE_CUDA_CHECK(cudaMalloc((void **)&obj_count, sizeof(int)));
+    BASE_CUDA_CHECK(cudaMemset(obj_count, 0, sizeof(int)));
+    
+    make_anchorhead_postprocess_kernal<<<feature_bev_size, num_anchors, 0, post_stream_>>>(cls_input_ptr_, 
+                                                                      box_input_ptr_,
+                                                                      dir_cls_input_ptr_,
+                                                                      dev_anchors_,
+                                                                      anchors_bottom_height_,
+                                                                      bndbox_output_,
+                                                                      obj_count,
+                                                                      num_classes,
+                                                                      num_anchors,
+                                                                      feature_x_size,
+                                                                      feature_y_size,
+                                                                      xmin,
+                                                                      xmax,
+                                                                      ymin,
+                                                                      ymax,
+                                                                      score_thresh,
+                                                                      params_ptr_->num_dir_bins,
+                                                                      params_ptr_->dir_offset,
+                                                                      params_ptr_->dir_limit_offset);
+    
+}
+
+void PointPillarsTwoHeadCudaPostprocess::centerHeadPostProcessCuda() {
+    // 1 param load
+    const int feature_bev_size = params_ptr_->feature_x_size * params_ptr_->feature_y_size;
+
+    headmap_sigmoid_kernal<<<feature_bev_size, 2, 0, post_stream_>>>(hm_input_ptr_, 
+                                                                    feature_bev_size,
+                                                                    hm_sigmoid_input_);
+
+    dimention_exp_kernal<<<feature_bev_size, 3, 0, post_stream_>>>(dim_input_ptr_, 
+                                                                   feature_bev_size,
+                                                                   dim_exp_input_);
+}
+
+
+void PointPillarsTwoHeadCudaPostprocess::generateResults() {
+    const auto& feature_x_size = params_ptr_->feature_x_size;
+    const auto& feature_y_size = params_ptr_->feature_y_size;
+    const int feature_bev_size = feature_x_size * feature_y_size;
+    const auto& downsample_stride = params_ptr_->downsample_stride;
+    const auto& topK = params_ptr_->topK;
+    const auto& pillar_x_size = params_ptr_->pillar_x_size;
+    const auto& pillar_y_size = params_ptr_->pillar_y_size;
+    const auto &xmin = params_ptr_->detection_range.xmin;
+    const auto &xmax = params_ptr_->detection_range.xmax;
+    const auto &ymin = params_ptr_->detection_range.ymin;
+    const auto &ymax = params_ptr_->detection_range.ymax;
+    const auto &score_thresh = params_ptr_->centerhead_regression_box_confidence_thre;
+    const auto &nms_thresh = params_ptr_->nms_thres;
+
+    // 1 anchor head res
+    auto timer = getTime();
+    float obj_count = 0;    
+    BASE_CUDA_CHECK(cudaMemcpy(&obj_count, bndbox_output_, sizeof(float),
+                    cudaMemcpyDeviceToHost));
+    std::cout << "obj_count copy : " << (getTime() - timer) * 1000 << std::endl;
+    timer = getTime();
+    int num_obj = static_cast<int>(obj_count);
+    auto output = std::shared_ptr<float>(new float[num_obj * 9]);
+    BASE_CUDA_CHECK(cudaMemcpy(output.get(), bndbox_output_ + 1, num_obj * 9 * sizeof(float),
+                    cudaMemcpyDeviceToHost));
+    std::cout << "mem copy 1: " << (getTime() - timer) * 1000 << std::endl;
+
+
+
+
+    std::vector<Bndbox> res;
+    res.reserve(num_obj + topK);
+    for (int i = 0; i < num_obj; i++) {
+        res.emplace_back(Bndbox(output.get()[i * 9],     output.get()[i * 9 + 1], output.get()[i * 9 + 2], 
+                        output.get()[i * 9 + 3], output.get()[i * 9 + 4], output.get()[i * 9 + 5], 
+                        output.get()[i * 9 + 6], static_cast<int>(output.get()[i * 9 + 7])+2, 
+                        output.get()[i * 9 + 8]));
+    }
+
+    // 2 center head res
+    auto timer1 = getTime();
+    timer = getTime();
+    
+    auto hm_sigmoid_input_cpu_ = std::shared_ptr<float>(new float[feature_bev_size * 2]);
+    BASE_CUDA_CHECK(cudaMemcpyAsync(hm_sigmoid_input_cpu_.get(), hm_sigmoid_input_, feature_bev_size * 2 * sizeof(float),
+                    cudaMemcpyDeviceToHost, post_stream_));
+    
+    std::cout << "hm memcopy: " << (getTime() - timer) * 1000 << std::endl;
+    timer = getTime();
+    auto dim_exp_input_cpu_ = std::shared_ptr<float>(new float[feature_bev_size * 3]);
+    BASE_CUDA_CHECK(cudaMemcpyAsync(dim_exp_input_cpu_.get(), dim_exp_input_, feature_bev_size * 3 * sizeof(float),
+                    cudaMemcpyDeviceToHost, post_stream_));
+    std::cout << "dim memcopy: " << (getTime() - timer) * 1000 << std::endl;
+
+    auto center_input_cpu_ = std::shared_ptr<float>(new float[feature_bev_size * 2]);
+    BASE_CUDA_CHECK(cudaMemcpyAsync(center_input_cpu_.get(), center_input_ptr_, feature_bev_size * 2 * sizeof(float),
+                    cudaMemcpyDeviceToHost, post_stream_));
+
+    auto center_z_input_cpu_ = std::shared_ptr<float>(new float[feature_bev_size * 1]);
+    BASE_CUDA_CHECK(cudaMemcpyAsync(center_z_input_cpu_.get(), center_z_input_ptr_, feature_bev_size * 1 * sizeof(float),
+                    cudaMemcpyDeviceToHost, post_stream_));
+
+    auto rot_input_cpu_ = std::shared_ptr<float>(new float[feature_bev_size * 2]);
+    BASE_CUDA_CHECK(cudaMemcpyAsync(rot_input_cpu_.get(), rot_input_ptr_, feature_bev_size * 2 * sizeof(float),
+                    cudaMemcpyDeviceToHost, post_stream_));
+
+    std::cout << "post memcopy: " << (getTime() - timer1) * 1000 << std::endl;
+
+
+    // std::cout << "\n hm_input_ptr_  ----------------------- \n" << std::endl;
+
+    // for (int i = 0; i < 50; i++){
+    //     std::cout << hm_sigmoid_input_cpu_.get()[i] << " ";
+    // }
+    // std::cout << "\n hm_input_ptr_  END ----------------------- \n\n" << std::endl;
+    
+    
+    
+    // 3 sort cuda: include scores + inds
+    // version 1 25ms~
+    // std::vector<std::size_t> sorted_indices(feature_bev_size * 2);
+    // std::iota(sorted_indices.begin(), sorted_indices.end(), 0);
+    // std::sort(sorted_indices.begin(), sorted_indices.end(),
+    //         [&](const std::size_t& lhs, const std::size_t& rhs) {
+    //           return hm_sigmoid_input_cpu_.get()[lhs] > hm_sigmoid_input_cpu_.get()[rhs];
+    //         });
+
+    // version 2 5ms~
+    // timer = getTime();
+    // int sorted_indices[feature_bev_size * 2];
+    // std::iota(sorted_indices, sorted_indices + feature_bev_size * 2, 0);
+    // thrust::sort_by_key(hm_sigmoid_input_cpu_.get(), hm_sigmoid_input_cpu_.get() + feature_bev_size * 2, sorted_indices);    
+    // std::cout << "post sort: " << (getTime() - timer) * 1000 << std::endl;
+
+    // version 3 fail
+    // timer = getTime();
+    // int sorted_indices[feature_bev_size * 2];
+    // std::iota(sorted_indices, sorted_indices + feature_bev_size * 2, 0);
+    // run_qsort(hm_sigmoid_input_cpu_.get(), sorted_indices, feature_bev_size * 2);
+    // thrust::sort_by_key(hm_sigmoid_input_cpu_.get(), hm_sigmoid_input_cpu_.get() + feature_bev_size * 2, sorted_indices);    
+    // std::cout << "post sort: " << (getTime() - timer) * 1000 << std::endl;
+   
+    // 4 gather center center_z dim rot
+    // version 1
+    // timer = getTime();
+    // int cnt = 0;
+    // for (int i = feature_bev_size * 2 - 1; i > feature_bev_size * 2 - 1 - topK; i--){
+    //     int ind = sorted_indices[i] % (feature_x_size * feature_y_size);
+        
+    //     float center_x = center_input_cpu_.get()[ind];
+    //     float center_y = center_input_cpu_.get()[feature_x_size * feature_y_size + ind];
+    //     float xs = (ind % feature_x_size + center_x) * downsample_stride * pillar_x_size + xmin;
+    //     float ys = (ind / feature_x_size + center_y) * downsample_stride * pillar_y_size + ymin;
+    //     float zs = center_z_input_cpu_.get()[ind];
+
+    //     float w = dim_exp_input_cpu_.get()[ind];
+    //     float l = dim_exp_input_cpu_.get()[feature_x_size * feature_y_size + ind];
+    //     float h = dim_exp_input_cpu_.get()[2 * feature_x_size * feature_y_size + ind];
+
+    //     float rot_cos = rot_input_cpu_.get()[ind];
+    //     float rot_sin = rot_input_cpu_.get()[feature_x_size * feature_y_size + ind];
+    //     float angle = std::atan2(rot_cos, rot_sin);
+
+    //     int class_id = sorted_indices[i] / (feature_x_size * feature_y_size);
+
+    //     // res[i + num_obj] =  Bndbox(xs, ys, zs, 
+    //     // if (hm_sigmoid_input_cpu_.get()[sorted_indices[i]] > score_thresh){
+    //     if (hm_sigmoid_input_cpu_.get()[i] > score_thresh){
+    //         cnt += 1;
+    //         res.emplace_back(Bndbox(xs, ys, zs, 
+    //                                 w,  l,  h, 
+    //                                angle, class_id, 
+    //                                hm_sigmoid_input_cpu_.get()[i]));
+    //     }
+    // }
+    // std::cout << "post decode: " << (getTime() - timer) * 1000 << std::endl;
+
+
+    // 4 gather center center_z dim rot
+    timer = getTime();
+    // int cnt = 0;
+    for (int i = 0; i < feature_bev_size * 2; i++){
+        if (hm_sigmoid_input_cpu_.get()[i] > score_thresh){
+            int ind = i % (feature_x_size * feature_y_size);
+            
+            float center_x = center_input_cpu_.get()[ind];
+            float center_y = center_input_cpu_.get()[feature_x_size * feature_y_size + ind];
+            float xs = (ind % feature_x_size + center_x) * downsample_stride * pillar_x_size + xmin;
+            float ys = (ind / feature_x_size + center_y) * downsample_stride * pillar_y_size + ymin;
+            float zs = center_z_input_cpu_.get()[ind];
+
+            float w = dim_exp_input_cpu_.get()[ind];
+            float l = dim_exp_input_cpu_.get()[feature_x_size * feature_y_size + ind];
+            float h = dim_exp_input_cpu_.get()[2 * feature_x_size * feature_y_size + ind];
+
+            float rot_cos = rot_input_cpu_.get()[ind];
+            float rot_sin = rot_input_cpu_.get()[feature_x_size * feature_y_size + ind];
+            float angle = std::atan2(rot_cos, rot_sin);
+
+            int class_id = i / (feature_x_size * feature_y_size);
+
+            // res[i + num_obj] =  Bndbox(xs, ys, zs, 
+            // if (hm_sigmoid_input_cpu_.get()[sorted_indices[i]] > score_thresh){
+        
+            // cnt += 1;
+            res.emplace_back(Bndbox(xs, ys, zs, 
+                                    w,  l,  h, 
+                                   angle, class_id, 
+                                   hm_sigmoid_input_cpu_.get()[i]));
+        }
+    }
+    std::cout << "post decode: " << (getTime() - timer) * 1000 << std::endl;
+
+    // 5 decode
+    timer = getTime();
+    auto nms_pred = nms_cpu(res, nms_thresh);
+    std::cout << "nms_cpu: " << (getTime() - timer) * 1000 << std::endl;
+    std::vector<Object::Ptr> objects;
+    objects.resize(nms_pred.size());
+    auto& object_vec = lidar_msg_ptr_->objects_ai;
+    object_vec.reserve(nms_pred.size());
+
+    for (size_t i = 0; i < nms_pred.size(); ++i) {
+        auto& obj = objects[i];
+        obj.reset(new Object);
+        obj->type_confidence = nms_pred[i].score;
+        obj->exist_confidence = nms_pred[i].score;
+        obj->type = kIdxTypeMap.at(nms_pred[i].id);
+        std::cout << i << "    " << nms_pred[i].id << " " << nms_pred[i].score << " " << nms_pred[i].x << " " << nms_pred[i].y << " " << nms_pred[i].z << std::endl;
+
+        RotateBox box;
+        Eigen::Vector3d center, size, angle;
+        size.x() = nms_pred[i].w;
+        size.y() = nms_pred[i].l;
+        size.z() = nms_pred[i].h;
+        center.x() = nms_pred[i].x;
+        center.y() = nms_pred[i].y;
+        center.z() = nms_pred[i].z;
+        box = RotateBox(center, size, nms_pred[i].rt);
+        obj->center = center;
+        obj->size = size;
+        obj->direction = box.heading;
+        object_vec.emplace_back(obj);
+    }
+}
+
+void PointPillarsTwoHeadCudaPostprocess::postprocess(const LidarFrameMsg::Ptr& lidar_msg_ptr) {
+    lidar_msg_ptr_ = lidar_msg_ptr;
+    
+    printf("\n time stamp ----------------- %.3f\n", lidar_msg_ptr_->timestamp);
+    // ros::Time ts;
+    // ts.fromSec(lidar_msg_ptr->timestamp);
+    cleanData();
+    anchorHeadPostProcessCuda();
+    timer = getTime();
+    centerHeadPostProcessCuda();
+    std::cout << "centerHeadPostProcessCuda: " << (getTime() - timer) * 1000 << std::endl;
+    // timer = getTime();
+    // float obj_count1 = 0;    
+    // BASE_CUDA_CHECK(cudaMemcpyAsync(&obj_count1, bndbox_output_, sizeof(float),
+    //                 cudaMemcpyDeviceToHost, post_stream_));
+    // std::cout << "out ---------- obj_count copy 1: " << (getTime() - timer) * 1000 << std::endl;
+    timer = getTime();
+    generateResults();
+    std::cout << "generateResults: " << (getTime() - timer) * 1000 << std::endl;
+
+}
+
+}  // namespace robosense
