@@ -1,0 +1,21 @@
+syntax = "proto2";
+package perception.v2x;
+
+message InputSource{
+    optional string source_name = 1;
+    optional string topic = 2;
+}
+
+message V2xFusionInitOptions{
+  optional string module_name = 1;
+  optional string frame_id = 2;
+  optional bool use_bsm = 3 [default = true];
+  optional bool use_rsm = 4 [default = true];
+  repeated InputSource input_source = 5;
+  optional string output_topic = 6;
+  optional string localization_topic = 7;
+  optional bool use_v2n_rsm = 8 [default = true];
+  optional bool use_ssm = 9 [default = true];
+  optional bool use_v2n_rsi = 10 [default = false];
+  optional bool use_v2v_ssm = 11 [default = false];
+}

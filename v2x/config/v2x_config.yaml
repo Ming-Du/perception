@@ -1,0 +1,25 @@
+self_vehicle_filter:
+  lon: 0.41
+  lat: 0.41
+  heading: 1.2
+  speed: 0.3
+  width: 0.5
+  length: 0.5
+  eva: 5.0
+  host_length: 5
+  host_width: 2
+  host_high: 2
+  iou_thr: 0.1
+  
+
+v2x_fusion:
+  use_filter_ego_car: true
+  TimeCheckOfStoreV2ISSM: 0.5
+  TimeCheckOfStoreV2IRSM: 0.1
+  TimeCheckOfStoreV2NRSM: 2.0
+  TimeCheckOfStoreV2NRSI: 2.0
+  TimeCheckOfStoreV2VBSM: 0.1
+  TimeCheckOfLocalization: 0.1
+
+v2x_display:
+  pub_v2x_rviz : true 

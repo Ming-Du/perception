@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- 配置文件默认路径 -->
+  <arg name="config_path" default="$(find config)/vehicle"/>
+  <!-- 传感器外参配置文件 -->
+  <arg name="sensor_meta" 
+    default="$(arg config_path)/sensor/calibrated_sensor.pb.txt" />
+
+  <node name="pointcloud_transform_node" output="screen" 
+    pkg="pointcloud_transform" type="pointcloud_transform_node" 
+    args="--logtostderr=0 --stderrthreshold=0 
+          --sensor_meta_path=$(arg sensor_meta)" >
+  </node>
+</launch>
