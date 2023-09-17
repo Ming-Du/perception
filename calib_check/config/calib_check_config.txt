@@ -1,0 +1,53 @@
+# 是否要手动调整相机外参
+calib_enbale_flag = 0
+# 是否要加载手动调整的相机外参
+load_multable_calib_flag =0
+# 要进行手动调整外参的相机名称
+#/sensor/camera/sensing/image_raw_60
+#/sensor/camera/sensing/image_raw_30
+#/sensor/camera/sensing/image_raw_120
+#/sensor/camera/sensing/image_raw_back
+#/sensor/camera/sensing/image_raw_left
+#/sensor/camera/sensing/image_raw_right
+# 检查标定的相机
+calib_camera_name=/sensor/camera/sensing/image_raw_60
+# 可接受的最大时间阈值差
+max_time_tr=1.0
+image_pointcloud_diff = 10.0
+
+
+###################发送调试topic##############
+# 是否发布点云到相机投影可视化topic
+is_pub_frustumImg=1
+# 是否发布camera视锥可视化topic
+is_pub_camera_frustum=1
+# 是否去畸变
+is_dedistortion=true
+
+######################lidar 点云滤波#####################
+car_boundary_x_min=1
+car_boundary_x_max=60
+car_boundary_y_min=-10
+car_boundary_y_max=10
+# 点投影范围
+project_point_x_min=1
+project_point_x_max=40
+project_point_y_min=-10
+project_point_y_max=10
+# leaf_size设置的越大，体素格子也就越大，滤波效果也就越明显
+leaf_size = 0.10
+
+###################  接收相机topic ##########################
+rec_topic_name_front_image_30=/sensor/camera/sensing/image_raw_30
+rec_topic_name_front_image_60=/sensor/camera/sensing/image_raw_60
+rec_topic_name_front_image_120=/sensor/camera/sensing/image_raw_120
+rec_topic_name_front_image_left120=/sensor/camera/sensing/image_raw_left 
+rec_topic_name_front_image_right120=/sensor/camera/sensing/image_raw_right 
+rec_topic_name_back_image_back120=/sensor/camera/sensing/image_raw_back
+img_type=nvjpeg
+rec_topic_name_front_camera_obstacle_front60=/perception/camera/camera_obstacle_front60
+
+###################  接收lidar topic ##########################
+## 移动到通过launch文件配置 lidar字段
+rec_topic_name_lidar_cloud=/sensor/lidar/innolidar/point_cloud
+

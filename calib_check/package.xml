@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<package>
+    <name>calib_check</name>
+    <version>1.11.0</version>
+    <description>calib_check</description>
+
+    <maintainer email="cirpue49@yahoo.co.jp">Kosuke Murakami</maintainer>
+    <license>Apache 2.0</license>
+
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <build_depend>roscpp</build_depend>
+    <build_depend>roslib</build_depend>
+    <build_depend>pcl_ros</build_depend>
+    
+    <build_depend>tf2</build_depend>
+    <build_depend>tf2_geometry_msgs</build_depend>
+    <build_depend>image_transport</build_depend>
+    <build_depend>sensor_msgs</build_depend>
+    <build_depend>cv_bridge</build_depend>
+    <build_depend>std_msgs</build_depend>
+
+    <build_depend>perception_base</build_depend>
+    <build_depend>common</build_depend>
+    <build_depend>abseil_cpp</build_depend>
+
+    <run_depend>roscpp</run_depend>
+    <run_depend>roslib</run_depend>
+    <run_depend>pcl_ros</run_depend>
+    
+    <run_depend>tf2</run_depend>
+    <run_depend>tf2_geometry_msgs</run_depend>
+    <run_depend>image_transport</run_depend>
+    <run_depend>sensor_msgs</run_depend>
+    <run_depend>cv_bridge</run_depend>
+    <run_depend>std_msgs</run_depend>
+
+    <run_depend>perception_base</run_depend>
+    <run_depend>common</run_depend>
+    <run_depend>abseil_cpp</run_depend>
+
+    <export></export>
+</package>

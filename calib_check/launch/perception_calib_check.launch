@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="config_path" default="$(find config)/vehicle"/>
+  <arg name="sensor_meta" value="$(arg config_path)/sensor/calibrated_sensor.pb.txt " />
+  <arg name="obs_enable_hdmap_input" default="true" />
+  <arg name= "calib_check_config_path_arg" default="$(find calib_check)/config/" />
+  <arg name="lidar" default="/sensor/lidar/middle/point_cloud" />
+  <node name="calib_check" ns="/perception/calib_check"
+    pkg="calib_check" type="calib_check_node" output="screen"
+    args="--logtostderr=0 --stderrthreshold=0 --v=1
+          --sensor_meta_path=$(arg sensor_meta) 
+          --work_root=$(arg calib_check_config_path_arg)" >
+    <param name= "calib_check_config_path" value="$(find calib_check)/config/" />
+    <param name= "check_lidar" value="$(arg lidar)" />
+  </node>          
+</launch>
